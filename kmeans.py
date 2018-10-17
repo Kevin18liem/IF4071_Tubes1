@@ -16,7 +16,7 @@ class kmeans:
             raise NameError('Dimension of the input data and dimension of the initial cluster centers must be equal.')
 
         maximum_change = float('inf')
-        stop_condition = self.__tolerance ** 2
+        stop_condition = self.__tolerance
         while maximum_change > stop_condition:
             self.__clusters = self.__update_clusters()
             update_centroids = self.__update_centroids()

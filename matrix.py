@@ -5,7 +5,7 @@ class type_matrix(IntEnum):
     
     EUCLIDEAN = 0
     EUCLIDEAN_SQUARE = 1
-    MANHATTAN = 1
+    MANHATTAN = 2
 
 class distance_matrix:
     def __init__(self, matrix_type, **kwargs):
