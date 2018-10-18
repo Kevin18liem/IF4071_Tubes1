@@ -39,5 +39,4 @@ class Agglomerative:
                 clusters.append(self.clusters[minindexi] + self.clusters[minindexj])
             elif (iterator != minindexj):
                 clusters.append(self.clusters[iterator])
-            
         return clusters
