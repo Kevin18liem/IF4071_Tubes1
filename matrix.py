@@ -4,7 +4,6 @@ from enum import IntEnum
 class type_matrix(IntEnum):
     
     EUCLIDEAN = 0
-    EUCLIDEAN_SQUARE = 1
     MANHATTAN = 2
 
 class distance_matrix:
@@ -19,17 +18,13 @@ class distance_matrix:
     def __create_calculator_distance(self):
 
         if self.__type == type_matrix.EUCLIDEAN:
-                return euclidean_distance_numpy
-        elif self.__type == type_matrix.EUCLIDEAN_SQUARE:
-                return euclidean_distance_square_numpy
+                return euclidean_distance
         elif self.__type == type_matrix.MANHATTAN:
                 return manhattan_distance_numpy
     def get_distance_type(self):
         return (self.__type)
 
-def euclidean_distance_numpy(object1, object2):
-    return numpy.sum(numpy.sqrt(numpy.square(object1 - object2)), axis=1).T
-def euclidean_distance_square_numpy(object1, object2):
-    return numpy.sum(numpy.square(object1 - object2), axis=1).T
+def euclidean_distance(object1, object2):
+    return numpy.sqrt(numpy.sum(numpy.square(object1 - object2), axis=1).T)
 def manhattan_distance_numpy(object1, object2):
     return numpy.sum(numpy.absolute(object1 - object2), axis=1).T

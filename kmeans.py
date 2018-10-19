@@ -9,7 +9,7 @@ class kmeans:
         self.__clusters = []
         self.__centroids = numpy.matrix(initial_centroids)
         self.__tolerance = tolerance
-        self.__matrix = kwargs.get('matrix', distance_matrix(type_matrix.EUCLIDEAN_SQUARE))
+        self.__matrix = kwargs.get('matrix', distance_matrix(type_matrix.EUCLIDEAN))
         
     def process(self):
         if (len(self.__data[0])) != len(self.__centroids[0]):
