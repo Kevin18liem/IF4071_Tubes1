@@ -28,11 +28,11 @@ class Multi_Layer_NN:
 				start_index = i * self.batch_size
 				end_index = i * self.batch_size + self.batch_size
 
-	def feed_forward(self, w_output):
+	def feed_forward(self, instance, w_output):
 		s = list()
 		o = list()
 		# Feed Forward Hidden Node
-		s_temp = self.instance.dot(self.w_hidden_node[0].T)
+		s_temp = instance.dot(self.w_hidden_node[0].T)
 		o_temp = self.sigmoid(s_temp)
 		s.append(s_temp)
 		o.append(o_temp)
@@ -58,12 +58,11 @@ class Multi_Layer_NN:
 		d.insert(0, d_temp)
 		iteration = len(self.w_hidden_node)
 		for i in range(iteration-1,0,-1):
-			print('o[i-1]', o[i-1], '1-o[i-1]', 1-o[i-1])
 			d_temp = np.multiply(np.multiply(o[i-1], 1-o[i-1]), (self.w_hidden_node[i].T.dot(d[0].T)).T)
 			d.insert(0, d_temp)
 		return d
 
-	def gradient_descent(self, instance_target, w_output):
+	def gradient_descent(self, instance, instance_target, w_output):
 		_,o,_,o_out = feed_forward(instance, self.w_hidden_node, w_output)
 		
 		# Back-Propagation		
@@ -135,8 +134,7 @@ w_hidden_node.append(W2)
 
 # Main
 multiLayerNN = Multi_Layer_NN(instance, 4, w_hidden_node, 1, 2, 0.5, 0.5, momentum = 0.001, epochs = 2)
-s, o, s_out, o_out = multiLayerNN.feed_forward(w_output)
+s, o, s_out, o_out = multiLayerNN.feed_forward(instance, w_output)
 print('Feed forward ', s, o, s_out, o_out)
-print('o', o)
 d = multiLayerNN.back_propagation(instance_target, o, o_out, w_output)
 print('Back propagation ', d)
