@@ -3,13 +3,14 @@ import numpy as np
 
 class Multi_Layer_NN:
 
-	def __init__(self, data, num_input_node, hidden_node, 
+	def __init__(self, data, num_input_node, hidden_node, output_node,
 		num_output_node, num_batch, 
 		learning_rate_const, tolerance_const, **kwargs):
 		
 		self.instance = data
 		self.input_node_size = num_input_node
-		self.w_hidden_node = hidden_node		
+		self.w_hidden_node = hidden_node
+		self.w_output_node = output_node
 		self.output_node_size = num_output_node
 		# Gradient Descent Parameters
 		self.batch_size = num_batch
@@ -28,7 +29,7 @@ class Multi_Layer_NN:
 				start_index = i * self.batch_size
 				end_index = i * self.batch_size + self.batch_size
 
-	def feed_forward(self, instance, w_output):
+	def feed_forward(self, instance):
 		s = list()
 		o = list()
 		# Feed Forward Hidden Node
@@ -42,7 +43,7 @@ class Multi_Layer_NN:
 			o_temp = self.sigmoid(s_temp)
 			o.append(o_temp)
 		# Feed Forward Output Node
-		s_out = o[-1].dot(w_output.T)
+		s_out = o[-1].dot(self.w_output_node.T)
 		o_out = self.sigmoid(s_out)
 		return s, o, s_out, o_out
 
@@ -50,20 +51,27 @@ class Multi_Layer_NN:
 	    output = 1 / (1 + np.exp(-X))
 	    return np.matrix(output)
 
-	def back_propagation(self, instance_target, o, o_out, w_output):
+	def back_propagation(self, instance_target, o, o_out):
 		d = list()
 		d_temp = np.multiply(np.multiply(o_out, 1-o_out), instance_target-o_out)
 		d.insert(0, d_temp)
-		d_temp = np.multiply(np.multiply(o[-1], 1-o[-1]), (w_output.T.dot(d[0].T)).T)
+		d_temp = np.multiply(np.multiply(o[-1], 1-o[-1]), (self.w_output_node.T.dot(d[0].T)).T)
 		d.insert(0, d_temp)
 		iteration = len(self.w_hidden_node)
-		for i in range(iteration-1,0,-1):
+		for i in range(iteration-1, 0, -1):
 			d_temp = np.multiply(np.multiply(o[i-1], 1-o[i-1]), (self.w_hidden_node[i].T.dot(d[0].T)).T)
 			d.insert(0, d_temp)
 		return d
 
-	def gradient_descent(self, instance, instance_target, w_output):
-		_,o,_,o_out = feed_forward(instance, self.w_hidden_node, w_output)
+	def update_weight(self, o, delta):
+		self.w_output_node[0] = self.w_output_node[0] + self.momentum * self.w_output_node[0] + self.learning_rate * d[-1].T.dot(o[-1])
+		iteration = len(self.w_hidden_node)
+		for i in range(iteration-1, 0, -1):
+			self.w_hidden_node[i] = self.w_hidden_node[i] + self.momentum * self.w_hidden_node[i] + self.learning_rate * d[i].T.dot(o[i-1])
+		self.w_hidden_node[0] = self.w_hidden_node[0] + self.momentum * self.w_hidden_node[0] + self.learning_rate * d[0].T.dot(self.instance)
+
+	def gradient_descent(self, instance, instance_target):
+		_,o,_,o_out = feed_forward(instance, self.w_hidden_node, self.w_output_node)
 		
 		# Back-Propagation		
 		vector_of_one = np.ones((o_out.shape[0],1))
@@ -88,11 +96,8 @@ class Multi_Layer_NN:
 np.random.seed(0)
 
 W1 = np.random.randn(4, 4) / np.sqrt(4)
-print('w1', W1)
 W2 = np.random.randn(3, 4) / np.sqrt(3)
-print('w2', W2)
-w_output = np.random.randn(1, 3)
-print('wout', w_output)
+w_output_node = np.random.randn(1, 3)
 
 instance = np.matrix([[1,2,3,4],[4,5,6,7]])
 print('instance ', instance)
@@ -131,10 +136,14 @@ w_hidden_node.append(W2)
 # d1 = np.multiply(np.multiply(c1, 1-c1), (W2.T.dot(d[0].T)).T)
 # d.insert(0, d1)
 # print('delta layer1', d1)
+print('w ', w_hidden_node)
+print('wo ', w_output_node)
 
 # Main
-multiLayerNN = Multi_Layer_NN(instance, 4, w_hidden_node, 1, 2, 0.5, 0.5, momentum = 0.001, epochs = 2)
-s, o, s_out, o_out = multiLayerNN.feed_forward(instance, w_output)
-print('Feed forward ', s, o, s_out, o_out)
-d = multiLayerNN.back_propagation(instance_target, o, o_out, w_output)
-print('Back propagation ', d)
+multiLayerNN = Multi_Layer_NN(instance, 4, w_hidden_node, w_output_node, 1, 2, 0.5, 0.5, momentum = 0.001, epochs = 2)
+s, o, s_out, o_out = multiLayerNN.feed_forward(instance)
+print('Feed forward s ', s, ' o ', o, ' so ', s_out, ' oo ', o_out)
+d = multiLayerNN.back_propagation(instance_target, o, o_out)
+print('Back propagation d', d)
+multiLayerNN.update_weight(o, d)
+print('Update weight wh ', multiLayerNN.w_hidden_node, ' wo ', multiLayerNN.w_output_node)
