@@ -1,17 +1,14 @@
-from __future__ import division
 import numpy as np
 
-class Multi_Layer_NN:
+class MultiLayerNN:
 
 	def __init__(self, data, num_input_node, hidden_node, output_node,
 		num_output_node, num_batch, 
 		learning_rate_const, tolerance_const, **kwargs):
 		
 		self.instance = data
-		self.input_node_size = num_input_node
 		self.w_hidden_node = hidden_node
 		self.w_output_node = output_node
-		self.output_node_size = num_output_node
 		# Gradient Descent Parameters
 		self.batch_size = num_batch
 		self.learning_rate = learning_rate_const
@@ -23,11 +20,14 @@ class Multi_Layer_NN:
 		batch_iteration = int(np.ceil(self.instance.shape[0] / self.batch_size))
 		old_loss = -np.inf
 
-		for step in range(epochs):
+		for step in range(self.epochs):
 			loss = 0
 			for i in range(batch_iteration):
 				start_index = i * self.batch_size
 				end_index = i * self.batch_size + self.batch_size
+				if end_index > len(instance_target):
+					end_index = len(instance_target)
+				self.gradient_descent(self.instance[start_index:end_index:1], instance_target[start_index:end_index:1])
 
 	def feed_forward(self, instance):
 		s = list()
@@ -53,8 +53,10 @@ class Multi_Layer_NN:
 
 	def back_propagation(self, instance_target, o, o_out):
 		d = list()
+		# Back Propagation Output Node
 		d_temp = np.multiply(np.multiply(o_out, 1-o_out), instance_target-o_out)
 		d.insert(0, d_temp)
+		# Back Propagation Hidden Node
 		d_temp = np.multiply(np.multiply(o[-1], 1-o[-1]), (self.w_output_node.T.dot(d[0].T)).T)
 		d.insert(0, d_temp)
 		iteration = len(self.w_hidden_node)
@@ -63,87 +65,40 @@ class Multi_Layer_NN:
 			d.insert(0, d_temp)
 		return d
 
-	def update_weight(self, o, delta):
+	def update_weight(self, instance, o, d):
+		# Update Weight Output Node
 		self.w_output_node[0] = self.w_output_node[0] + self.momentum * self.w_output_node[0] + self.learning_rate * d[-1].T.dot(o[-1])
+		# Update Weight Hidden Node
 		iteration = len(self.w_hidden_node)
 		for i in range(iteration-1, 0, -1):
 			self.w_hidden_node[i] = self.w_hidden_node[i] + self.momentum * self.w_hidden_node[i] + self.learning_rate * d[i].T.dot(o[i-1])
-		self.w_hidden_node[0] = self.w_hidden_node[0] + self.momentum * self.w_hidden_node[0] + self.learning_rate * d[0].T.dot(self.instance)
+		self.w_hidden_node[0] = self.w_hidden_node[0] + self.momentum * self.w_hidden_node[0] + self.learning_rate * d[0].T.dot(instance)
 
 	def gradient_descent(self, instance, instance_target):
-		_,o,_,o_out = feed_forward(instance, self.w_hidden_node, self.w_output_node)
-		
-		# Back-Propagation		
-		vector_of_one = np.ones((o_out.shape[0],1))
-
-		# Calculate delta target and output
-		delta_t_o = np.matrix(np.diag(np.dot(o_out, (vector_of_one-o_out).T))).T
-		delta_t_o = np.matrix(np.diag(delta_t_o.dot((instance_target - o_out).T))).T
-
-		# Calculate delta hidden layer
-
-	def sigmoid_output_to_derivative(output):
-		return np.multiply(output, (1-output))
-
-    # def concat_ones_vector(X):
-    # 	ones_vector = np.ones((X.shape[0], 1))
-    # 	return np.concatenate((ones_vector, X), axis=1)	
-# def sigmoid(X):
-#     output = 1 / (1 + np.exp(-X))
-#     return np.matrix(output)
+		# Feed Forward
+		_,o,_,o_out = self.feed_forward(instance)
+		# Back Propagation		
+		d = self.back_propagation(instance_target, o, o_out)
+		# Update Weight
+		self.update_weight(instance, o, d)
 
 # Main
-np.random.seed(0)
-
-W1 = np.random.randn(4, 4) / np.sqrt(4)
-W2 = np.random.randn(3, 4) / np.sqrt(3)
-w_output_node = np.random.randn(1, 3)
-
 instance = np.matrix([[1,2,3,4],[4,5,6,7]])
 print('instance ', instance)
 instance_target = np.matrix([[2],[5]])
 print('instance_target', instance_target)
 
+np.random.seed(0)
+W1 = np.random.randn(4, 4) / np.sqrt(4)
+W2 = np.random.randn(3, 4) / np.sqrt(3)
+w_output_node = np.random.randn(1, 3)
 w_hidden_node = list()
-# o = list()
-# d = list()
-
 w_hidden_node.append(W1)
-# b1 = instance.dot(w_hidden_node[0].T)
-# c1 = np.matrix(1 / (1 + np.exp(-b1)))
-# o.append(c1)
-# print('output layer1 ', c1)
-
 w_hidden_node.append(W2)
-# b2 = c1.dot(w_hidden_node[1].T)
-# c2 = np.matrix(1 / (1 + np.exp(-b2)))
-# o.append(c2)
-# print('output layer2 ', c2)
-
-# b3 = c2.dot(w_output.T)
-# c3 = np.matrix(1 / (1 + np.exp(-b3)))
-# o_out = c3
-# print('output layerout ', c3)
-
-# d3 = np.multiply(np.multiply(c3, 1-c3), instance_target-o_out)
-# d.insert(0, d3)
-# print('delta layerout ', d3)
-
-# d2 = np.multiply(np.multiply(c2, 1-c2), (w_output.T.dot(d[0].T)).T)
-# d.insert(0, d2)
-# print('delta layer2', d2)
-
-# d1 = np.multiply(np.multiply(c1, 1-c1), (W2.T.dot(d[0].T)).T)
-# d.insert(0, d1)
-# print('delta layer1', d1)
 print('w ', w_hidden_node)
 print('wo ', w_output_node)
 
-# Main
-multiLayerNN = Multi_Layer_NN(instance, 4, w_hidden_node, w_output_node, 1, 2, 0.5, 0.5, momentum = 0.001, epochs = 2)
-s, o, s_out, o_out = multiLayerNN.feed_forward(instance)
-print('Feed forward s ', s, ' o ', o, ' so ', s_out, ' oo ', o_out)
-d = multiLayerNN.back_propagation(instance_target, o, o_out)
-print('Back propagation d', d)
-multiLayerNN.update_weight(o, d)
-print('Update weight wh ', multiLayerNN.w_hidden_node, ' wo ', multiLayerNN.w_output_node)
+multiLayerNN = MultiLayerNN(instance, 4, w_hidden_node, w_output_node, 1, 1, 0.5, 0.5, momentum = 0.001, epochs = 2)
+multiLayerNN.train(instance_target)
+print('w ', multiLayerNN.w_hidden_node)
+print('wo ',multiLayerNN. w_output_node)
