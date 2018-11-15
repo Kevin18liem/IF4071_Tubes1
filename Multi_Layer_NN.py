@@ -66,8 +66,11 @@ class MultiLayerNN:
         return d
 
     def update_weight(self, instance, o, d):
+        d_last = d[-1].T
+        for i in range(0, o[-1].shape[1]-1):
+            d_last = np.concatenate((d_last, d[-1].T), axis = 1)
         # Update Weight Output Node
-        self.w_output_node[0] = self.w_output_node[0] + self.momentum * self.w_output_node[0] + self.learning_rate * d[-1].T.dot(o[-1])
+        self.w_output_node = self.w_output_node + self.momentum * self.w_output_node + self.learning_rate * d_last.dot(o[-1].T)
         # Update Weight Hidden Node
         iteration = len(self.w_hidden_node)
         for i in range(iteration-1, 0, -1):
@@ -91,7 +94,7 @@ print('instance_target', instance_target)
 np.random.seed(0)
 W1 = np.random.randn(4, 4) / np.sqrt(4)
 W2 = np.random.randn(3, 4) / np.sqrt(3)
-w_output_node = np.random.randn(1, 3)
+w_output_node = np.random.randn(2, 3)
 w_hidden_node = list()
 w_hidden_node.append(W1)
 w_hidden_node.append(W2)
